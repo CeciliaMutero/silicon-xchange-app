@@ -56,17 +56,23 @@ export default function RecommendModal({
 
       if (insertError) throw insertError
 
-      // Update recommendation count and trust score
-      const { data: currentProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('recommendation_count, trust_score')
-        .eq('id', profileId)
-        .single()
+      // Fetch all recommendations for this profile to recalculate trust score
+      const { data: allRecs, error: fetchError } = await supabase
+        .from('recommendations')
+        .select('user_title, created_at, user_id')
+        .eq('profile_id', profileId)
 
       if (fetchError) throw fetchError
 
-      const newCount = (currentProfile.recommendation_count || 0) + 1
-      const newTrustScore = calculateTrustScore(newCount, userRole)
+      // Import the advanced algorithm
+      const { calculateTrustScore } = await import('@/lib/trust-score')
+
+      const newTrustScore = calculateTrustScore([
+        ...allRecs,
+        { user_title: userRole, created_at: new Date().toISOString(), user_id: userId }
+      ])
+
+      const newCount = (allRecs?.length || 0) + 1
 
       const { error: updateError } = await supabase
         .from('profiles')
@@ -88,28 +94,6 @@ export default function RecommendModal({
     }
   }
 
-  // Simple trust score algorithm
-  function calculateTrustScore(recCount: number, role: string): number {
-    let baseScore = 7.0
-    
-    // Add points for recommendations
-    baseScore += Math.min(recCount * 0.15, 2.5)
-    
-    // Weight by role
-    const roleWeights: Record<string, number> = {
-      'Founder': 1.2,
-      'Investor': 1.3,
-      'Operator': 1.1,
-      'Builder': 1.0,
-      'Journalist': 0.9,
-      'Other': 0.8,
-    }
-    
-    baseScore *= (roleWeights[role] || 1.0)
-    
-    // Cap at 10.0
-    return Math.min(baseScore, 10.0)
-  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
