@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser, getUserProfile, signOut } from '@/lib/auth'
-import { Search, Globe, Tag, Radio, MessageSquare, TrendingUp, LogIn, LogOut, ThumbsUp } from 'lucide-react'
+import { Search, Globe, Tag, Radio, MessageSquare, TrendingUp, LogIn, LogOut, ThumbsUp, Shield } from 'lucide-react'
 import AuthModal from '@/components/AuthModal'
 import RecommendModal from '@/components/RecommendModal'
 
@@ -175,7 +175,21 @@ export default function Home() {
                   <div className="text-right">
                     <div className="text-sm font-medium text-gray-900">{userProfile?.full_name}</div>
                     <div className="text-xs text-gray-500">{userProfile?.professional_role}</div>
+                    {userProfile?.is_admin && (
+                      <div className="text-xs text-purple-600 font-semibold">Admin</div>
+                    )}
                   </div>
+                  
+                  {userProfile?.is_admin && (
+                    <button
+                      onClick={() => window.location.href = '/admin'}
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    >
+                      <Shield className="h-4 w-4" />
+                      Admin
+                    </button>
+                  )}
+                  
                   <button
                     onClick={handleSignOut}
                     className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -329,7 +343,7 @@ export default function Home() {
 
                   <div className="flex items-center gap-4">
                     {profile.platform_link && (
-                      
+                      <a
                         href={profile.platform_link}
                         target="_blank"
                         rel="noopener noreferrer"

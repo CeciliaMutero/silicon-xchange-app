@@ -30,3 +30,11 @@ export interface Recommendation {
   rationale: string
   created_at: string
 }
+
+export interface UserProfile {
+  id: string
+  full_name: string
+  professional_role: string
+  is_admin: boolean
+  created_at: string
+}
