@@ -6,6 +6,7 @@ import { getCurrentUser, getUserProfile, signOut } from '@/lib/auth'
 import { Search, Globe, Tag, Radio, MessageSquare, TrendingUp, LogIn, LogOut, ThumbsUp, Shield } from 'lucide-react'
 import AuthModal from '@/components/AuthModal'
 import RecommendModal from '@/components/RecommendModal'
+import { useRouter } from 'next/navigation'
 
 interface Profile {
   id: string
@@ -39,6 +40,7 @@ interface UserProfile {
 }
 
 export default function Home() {
+  const router = useRouter()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [recommendations, setRecommendations] = useState<Record<string, Recommendation[]>>({})
   const [loading, setLoading] = useState(true)
@@ -165,10 +167,18 @@ export default function Home() {
             </div>
             
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/submit')}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              >
+                + Submit Creator
+              </button>
+              
               <div className="text-right">
                 <div className="text-2xl font-bold text-blue-600">{profiles.length}</div>
                 <div className="text-xs text-gray-500">Verified Creators</div>
               </div>
+            </div>
               
               {user ? (
                 <div className="flex items-center gap-3">
