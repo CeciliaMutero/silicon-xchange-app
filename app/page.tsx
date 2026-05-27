@@ -233,7 +233,7 @@ export default function Home() {
               placeholder="Search creators, topics, or keywords..."
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
             />
           </div>
 
@@ -245,7 +245,7 @@ export default function Home() {
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                 value={selectedGeography}
-                onChange={(e) => setSelectedGeography(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedGeography(e.target.value)}
               >
                 <option value="all">All Regions</option>
                 {geographies.map(geo => <option key={geo} value={geo}>{geo}</option>)}
@@ -259,7 +259,7 @@ export default function Home() {
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                 value={selectedTopic}
-                onChange={(e) => setSelectedTopic(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedTopic(e.target.value)}
               >
                 <option value="all">All Topics</option>
                 {topics.map(topic => <option key={topic} value={topic}>{topic}</option>)}
@@ -273,7 +273,7 @@ export default function Home() {
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                 value={selectedFormat}
-                onChange={(e) => setSelectedFormat(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedFormat(e.target.value)}
               >
                 <option value="all">All Formats</option>
                 {formats.map(format => <option key={format} value={format}>{format}</option>)}
