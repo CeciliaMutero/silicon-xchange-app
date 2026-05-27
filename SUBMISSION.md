@@ -9,14 +9,14 @@
 ## 🔗 Deliverables
 
 ### 1. Live Application
-**URL:** https://your-app.vercel.app
+**URL:** https://silicon-xchange-app.vercel.app
 
 **Test Account:**
 - Email: cecilmutero66@gmail.com
 - Password: Shish1993$
 
 ### 2. Source Code
-**GitHub Repository:** https://github.com/your-username/silicon-xchange-app
+**GitHub Repository:** https://github.com/CeciliaMutero/silicon-xchange-app
 
 ### 3. Documentation
 - README.md - Setup and installation instructions

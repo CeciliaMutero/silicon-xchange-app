@@ -42,7 +42,7 @@ Our trust score (6.0-10.0) considers:
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/YOUR_USERNAME/silicon-xchange-app.git
+git clone https://github.com/CeciliaMutero/silicon-xchange-app.git
 cd silicon-xchange-app
 ```
 
@@ -132,7 +132,7 @@ silicon-xchange-app/
 ## 🚢 Deployment
 
 Deployed on Vercel:
-- Production: [Your Vercel URL]
+- Production: (https://your-app.vercel.app)
 - Auto-deploys from `main` branch
 
 ## 📝 Engineering Reflection
