@@ -343,7 +343,7 @@ export default function AdminPage() {
                     <h3 className="text-lg font-bold text-gray-900">{profile.name}</h3>
                     <p className="text-gray-600 text-sm mt-1">{profile.bio}</p>
                     {profile.platform_link && (
-                      
+                      <a
                         href={profile.platform_link}
                         target="_blank"
                         rel="noopener noreferrer"
