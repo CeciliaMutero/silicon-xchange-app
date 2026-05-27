@@ -55,7 +55,7 @@ export default function AdminPage() {
       const profile = await getUserProfile(user.id)
       
       if (!profile.is_admin) {
-        alert('Access denied. Admin privileges required.')
+        window.alert('Access denied. Admin privileges required.')
         router.push('/')
         return
       }
