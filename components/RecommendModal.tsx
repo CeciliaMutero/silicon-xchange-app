@@ -43,7 +43,9 @@ export default function RecommendModal({
     setLoading(true)
 
     try {
-      // Insert recommendation
+      console.log('💬 Step 1: Inserting recommendation...')
+      
+      // Step 1: Insert recommendation
       const { error: insertError } = await supabase
         .from('recommendations')
         .insert({
@@ -54,46 +56,95 @@ export default function RecommendModal({
           rationale: rationale.trim(),
         })
 
-      if (insertError) throw insertError
+      if (insertError) {
+        console.error('❌ Insert error:', insertError)
+        throw insertError
+      }
 
-      // Fetch all recommendations for this profile to recalculate trust score
-      const { data: allRecs, error: fetchError } = await supabase
-        .from('recommendations')
-        .select('user_title, created_at, user_id')
-        .eq('profile_id', profileId)
+      console.log('✅ Recommendation inserted')
 
-      if (fetchError) throw fetchError
+      // Step 2: Get current profile values
+      console.log('💬 Step 2: Fetching current profile...')
+      
+      const { data: currentProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('recommendation_count, trust_score')
+        .eq('id', profileId)
+        .single()
 
-      // Import the advanced algorithm
-      const { calculateTrustScore } = await import('@/lib/trust-score')
+      if (fetchError) {
+        console.error('❌ Fetch error:', fetchError)
+        throw fetchError
+      }
 
-      const newTrustScore = calculateTrustScore([
-        ...allRecs,
-        { user_title: userRole, created_at: new Date().toISOString(), user_id: userId }
-      ])
+      console.log('📊 Current profile:', currentProfile)
 
-      const newCount = (allRecs?.length || 0) + 1
+      // Step 3: Calculate new values
+      const oldCount = currentProfile.recommendation_count || 0
+      const newCount = oldCount + 1
+      
+      // Trust score calculation
+      let newTrustScore = 7.0 // Base
+      newTrustScore += Math.min(newCount * 0.15, 2.5) // Diminishing returns
+      
+      // Role weight
+      const roleWeights: Record<string, number> = {
+        'Founder': 1.2,
+        'Investor': 1.3,
+        'Operator': 1.1,
+        'Builder': 1.0,
+        'Journalist': 0.9,
+        'Other': 0.8,
+      }
+      
+      const roleWeight = roleWeights[userRole] || 1.0
+      newTrustScore *= roleWeight
+      newTrustScore = Math.min(newTrustScore, 10.0)
+      newTrustScore = Math.round(newTrustScore * 10) / 10 // Round to 1 decimal
 
-      const { error: updateError } = await supabase
+      console.log('📈 OLD count:', oldCount, '→ NEW count:', newCount)
+      console.log('📈 OLD score:', currentProfile.trust_score, '→ NEW score:', newTrustScore)
+
+      // Step 4: Update the profile
+      console.log('💬 Step 3: Updating profile...')
+      
+      const { data: updateData, error: updateError } = await supabase
         .from('profiles')
         .update({
           recommendation_count: newCount,
           trust_score: newTrustScore,
         })
         .eq('id', profileId)
+        .select()
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('❌ Update error:', updateError)
+        throw updateError
+      }
 
-      onSuccess()
+      console.log('✅ Profile updated:', updateData)
+
+      // Verify the update worked
+      if (!updateData || updateData.length === 0) {
+        throw new Error('Profile update failed - no rows returned')
+      }
+
+      // Step 5: Success!
+      console.log('🎉 ALL DONE! Recommendation submitted and profile updated')
+      
+      alert(`✅ Success! ${profileName} now has ${newCount} recommendations and trust score ${newTrustScore}`)
+      
       setRationale('')
       onClose()
+      onSuccess()
+      
     } catch (err: any) {
+      console.error('❌ Full error:', err)
       setError(err.message || 'Failed to submit recommendation')
     } finally {
       setLoading(false)
     }
   }
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

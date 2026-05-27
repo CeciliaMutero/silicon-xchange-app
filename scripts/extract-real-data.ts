@@ -1,9 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Replace with your actual credentials
-const supabaseUrl = "https://yhhsvadwkkkyknesdaim.supabase.co"
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaHN2YWR3a2treWtuZXNkYWltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Mjc2NjgsImV4cCI6MjA5NTAwMzY2OH0.4t-3tD6gmx9TxvqTAGg0-6qagsY1uCY4frZR-9mgzzk"
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing Supabase Environment Variables")
+}
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Extracted from Ashley's LinkedIn post - 100+ African Tech Creators

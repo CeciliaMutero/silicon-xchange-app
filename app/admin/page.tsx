@@ -72,6 +72,8 @@ export default function AdminPage() {
 
   async function fetchData() {
     try {
+      console.log('🔍 Admin: Fetching pending profiles...')
+      
       // Fetch pending profiles
       const { data: pending, error: pendingError } = await supabase
         .from('profiles')
@@ -79,7 +81,14 @@ export default function AdminPage() {
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
 
-      if (pendingError) throw pendingError
+      console.log('📊 Pending profiles found:', pending?.length)
+      console.log('Pending data:', pending)
+
+      if (pendingError) {
+        console.error('❌ Pending error:', pendingError)
+        throw pendingError
+      }
+      
       setPendingProfiles(pending || [])
 
       // Fetch all approved profiles
@@ -88,6 +97,8 @@ export default function AdminPage() {
         .select('*')
         .eq('status', 'approved')
         .order('trust_score', { ascending: false })
+
+      console.log('📊 Approved profiles found:', approved?.length)
 
       if (approvedError) throw approvedError
       setAllProfiles(approved || [])
@@ -102,27 +113,48 @@ export default function AdminPage() {
         .order('created_at', { ascending: false })
         .limit(50)
 
+      console.log('📊 Recommendations found:', recs?.length)
+
       if (recsError) throw recsError
       setRecommendations(recs || [])
     } catch (error) {
-      console.error('Error fetching admin data:', error)
+      console.error('❌ Error fetching admin data:', error)
     }
   }
-
   async function approveProfile(profileId: string) {
     try {
-      const { error } = await supabase
+      console.log('🔍 Starting approval for:', profileId)
+      
+      // Update status
+      const { data, error } = await supabase
         .from('profiles')
         .update({ status: 'approved' })
         .eq('id', profileId)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Supabase error:', error)
+        throw error
+      }
       
-      await fetchData()
-      alert('Profile approved successfully!')
-    } catch (error) {
-      console.error('Error approving profile:', error)
-      alert('Failed to approve profile')
+      console.log('✅ Database response:', data)
+      
+      if (!data || data.length === 0) {
+        throw new Error('No profile was updated')
+      }
+      
+      // Remove from local state immediately
+      setPendingProfiles(prev => prev.filter(p => p.id !== profileId))
+      
+      // Also refresh from database
+      setTimeout(() => {
+        fetchData()
+      }, 500)
+      
+      alert('✅ Profile approved successfully!')
+    } catch (error: any) {
+      console.error('❌ Full error:', error)
+      alert(`Failed to approve: ${error.message}`)
     }
   }
 
@@ -130,21 +162,40 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to reject this profile?')) return
 
     try {
-      const { error } = await supabase
+      console.log('🔍 Starting rejection for:', profileId)
+      
+      // Update status
+      const { data, error } = await supabase
         .from('profiles')
         .update({ status: 'rejected' })
         .eq('id', profileId)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Supabase error:', error)
+        throw error
+      }
       
-      await fetchData()
-      alert('Profile rejected')
-    } catch (error) {
-      console.error('Error rejecting profile:', error)
-      alert('Failed to reject profile')
+      console.log('✅ Database response:', data)
+      
+      if (!data || data.length === 0) {
+        throw new Error('No profile was updated')
+      }
+      
+      // Remove from local state immediately
+      setPendingProfiles(prev => prev.filter(p => p.id !== profileId))
+      
+      // Also refresh from database
+      setTimeout(() => {
+        fetchData()
+      }, 500)
+      
+      alert('✅ Profile rejected')
+    } catch (error: any) {
+      console.error('❌ Full error:', error)
+      alert(`Failed to reject: ${error.message}`)
     }
   }
-
   async function deleteProfile(profileId: string) {
     if (!confirm('Are you sure you want to DELETE this profile permanently? This cannot be undone.')) return
 
@@ -240,6 +291,22 @@ export default function AdminPage() {
           </div>
         </div>
 
+        {/* Manual Refresh Button */}
+        <div className="mb-6">
+          <button
+            onClick={async () => {
+              console.log('🔄 Manual refresh triggered...')
+              await fetchData()
+              console.log('✅ Refresh complete!')
+              console.log('Pending:', pendingProfiles.length)
+              console.log('Approved:', allProfiles.length)
+            }}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+          >
+            🔄 Refresh Data
+          </button>
+        </div>
+
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow-sm mb-6">
           <div className="border-b border-gray-200">
@@ -281,13 +348,29 @@ export default function AdminPage() {
         {/* Pending Profiles Tab */}
         {activeTab === 'pending' && (
           <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-900">
+                Debug: Found {pendingProfiles.length} pending profile(s)
+              </p>
+            </div>
+
             {pendingProfiles.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <CheckCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-600 text-lg font-medium">No pending profiles</p>
                 <p className="text-gray-500 text-sm mt-2">All profiles have been reviewed!</p>
+                <button
+                  onClick={() => {
+                    console.log('🔍 Manually refreshing pending profiles...')
+                    fetchData()
+                  }}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Refresh
+                </button>
               </div>
             ) : (
+     
               pendingProfiles.map((profile) => (
                 <div key={profile.id} className="bg-white rounded-lg shadow-sm p-6">
                   <div className="flex justify-between items-start mb-4">
